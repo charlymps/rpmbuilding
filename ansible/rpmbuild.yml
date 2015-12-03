@@ -1,0 +1,23 @@
+---
+- hosts: all
+  sudo: true
+  tasks:
+    - name: Install binaries
+      yum: name={{ item }} state=latest
+      with_items:
+        - vim
+        - wget
+    - name: Create SOURCES directory for rpmbuild
+      file: path=/root/rpmbuild/SOURCES state=directory
+    - name: Create SPECS directory for rpmbuild
+      file: path=/root/rpmbuild/SPECS state=directory
+    - name: Download sources
+      get_url: url={{ item }} dest=/root/rpmbuild/SOURCES/
+      with_items:
+        - http://waf-fle.org/downloads/waf-fle_0.6.4.tar.gz
+    - name: Copy SPEC files
+      copy: src=../spec/{{ item }} dest=/root/rpmbuild/SPECS/
+      with_items:
+        - waf-fle.spec
+    - name: Build WAF-FLE RPM
+      command: /usr/bin/rpmbuild -ba /root/rpmbuild/SPECS/waf-fle.spec 
